@@ -19,32 +19,32 @@ pipeline {
 
         stage('Build and Test') {
             steps {
-                sh 'mvn clean test'
+                bat 'mvn clean test'
             }
             post {
                 always {
-                    junit 'target/surefire-reports/*.xml'
+                    junit allowEmptyResults: true, testResults: 'target/surefire-reports/*.xml'
                 }
             }
         }
 
         stage('Package') {
             steps {
-                sh 'mvn package'
+                bat 'mvn package'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE .'
+                bat 'docker build -t %DOCKER_IMAGE% .'
             }
         }
 
         stage('Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                    sh 'docker push $DOCKER_IMAGE'
+                    bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
+                    bat 'docker push %DOCKER_IMAGE%'
                 }
             }
         }
